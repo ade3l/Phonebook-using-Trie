@@ -17,9 +17,14 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.ToggleButton;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -28,7 +33,7 @@ import org.json.JSONObject;
 public class MainActivity extends AppCompatActivity {
     List<String> names = new ArrayList<>();
     JSONArray facultyData;
-    Boolean isHit;
+    Boolean isHit, isTrie;
     class TrieNode
     {
         // Each Trie Node contains a Map 'child'
@@ -118,16 +123,6 @@ public class MainActivity extends AppCompatActivity {
                 displayContactsUtil(curNode.child.get(c), (prefix+c));
             }
 
-//      manual way - to check each and every character
-//      for (char i = 'a'; i <= 'z'; i++)
-//      {
-//             TrieNode nextNode = curNode.child.get(i);
-//             if (nextNode != null)
-//             {
-//                 // System.out.println(" Char Found: " + i);
-//                 displayContactsUtil(nextNode, prefix + i);
-//             }
-//      }
         }
 
         // Display suggestions after every character enter by
@@ -163,18 +158,12 @@ public class MainActivity extends AppCompatActivity {
                 // no more prefixes are going to be present.
                 if (curNode == null)
                 {
-//                    System.out.println("\nNo Results Found for \""
-//                            + prefix + "\"");
+
 
                     i++;
                     break;
                 }
 
-                // If present in trie then display all
-                // the contacts with given prefix.
-//                System.out.println("\nSuggestions based on \""
-//                        + prefix + "\" are");
-//                Log.i("mine","I'll clear it here");
                 names.clear();
                 if(i==len-1)
                     displayContactsUtil(curNode, prefix);
@@ -236,8 +225,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         Trie trie = new Trie();
-//        String contacts [] = {"anil", "anu", "anupam", "anpket","adeel"};
-//        Log.i("mine",contacts.toString());
+        isTrie = false;
+
         facultyData= null;
         try {
             facultyData = new JSONArray(loadJSONFromAsset());
@@ -252,17 +241,26 @@ public class MainActivity extends AppCompatActivity {
         ListView searchResults =findViewById(R.id.namesList);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,names);
         searchResults.setAdapter(adapter);
-        Button button=(Button) findViewById(R.id.button);
+
+        TextView searchTime=(TextView) findViewById(R.id.searchTime);
+        FloatingActionButton button=(FloatingActionButton) findViewById(R.id.button);
         button.setOnClickListener(v -> {
             names.clear();
             isHit=false;
             String query = search.getText().toString().toUpperCase();
             Long start=System.nanoTime();
-//            trie.displayContacts(query);
-            linearSearch(query);
+            if(isTrie){
+                Log.i("mine","Checked");
+                trie.displayContacts(query);
+            }
+            else{
+                Log.i("mine","Unchecked");
+                linearSearch(query);
+            }
             Long time=System.nanoTime()-start;
             adapter.notifyDataSetChanged();
             Log.i("mine", String.valueOf((new Double(time))/1000000));
+            searchTime.setText("querying finished in "+String.valueOf((new Double(time))/1000000)+" microsecods");
 
         });
         searchResults.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -294,6 +292,19 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
                 builder.show();
+            }
+        });
+        Switch switchButton= (Switch) findViewById(R.id.toggle);
+        switchButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    isTrie = true;
+                }
+                else{
+                    isTrie = false;
+
+                }
             }
         });
     }

@@ -20,21 +20,22 @@
 
             <EditText
                 android:id="@+id/editTextTextPersonName"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:hint="Name to search"
                 android:inputType="textPersonName"
                 android:layout_weight="1"
                 />
+
             <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:layout_weight="1"
                 android:id="@+id/button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:fabSize="mini"
+                android:layout_gravity="right"
+                android:src="@drawable/ic_baseline_search_24"
+
                 android:text="Search"
-                android:layout_gravity="r"
-                />
+                app:fabSize="mini" />
         </LinearLayout>
 
     </androidx.appcompat.widget.Toolbar>
@@ -43,23 +44,63 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-
-
-
         <ListView
             android:id="@+id/namesList"
-            android:layout_width="0dp"
-            android:layout_height="366dp"
+            android:layout_width="384dp"
+            android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginBottom="25dp"
+            app:layout_constraintBottom_toTopOf="@+id/searchTime"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.0">
+            app:layout_constraintTop_toTopOf="parent">
 
         </ListView>
+
+        <LinearLayout
+            android:id="@+id/linearLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:layout_marginTop="89dp"
+            android:layout_marginBottom="147dp"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/searchTime">
+
+            <Switch
+                android:id="@+id/toggle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:padding="0dp"
+                android:text="Trie Search" />
+
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Linear Search"
+                android:textColor="#0C0303" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/searchTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="264dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.498"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/namesList" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </LinearLayout>
