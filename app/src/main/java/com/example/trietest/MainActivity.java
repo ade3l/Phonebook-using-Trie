@@ -1,13 +1,5 @@
 package com.example.trietest;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
-
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
@@ -18,19 +10,28 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.ToggleButton;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     List<String> names = new ArrayList<>();
@@ -40,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
     double linearTime;
     int trieCount,linearCount;
     TextView trieTimeText,linearTimeText;
-    class TrieNode
+    static class TrieNode
     {
         // Each Trie Node contains a Map 'child'
         // where each alphabet points to a Trie
@@ -54,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
         // Default Constructor
         public TrieNode()
         {
-            child = new HashMap<Character,TrieNode>();
+            child = new HashMap<>();
 
             // Initialize all the Trie nodes with NULL
             // for (char i = 'a'; i <= 'z'; i++)
@@ -69,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
         TrieNode root;
 
         // Insert all the Contacts into the Trie
-        public void insertIntoTrie(String contacts[])
+        public void insertIntoTrie(String[] contacts)
         {
             root = new TrieNode();
             int n = contacts.length;
@@ -118,7 +119,6 @@ public class MainActivity extends AppCompatActivity {
         public void displayContactsUtil(TrieNode curNode,
                                         String prefix)
         {
-            Boolean found=false;
             // System.out.println(" Prefix Found: " + prefix);
             if (curNode.isLast) {
 //                System.out.println(prefix);
@@ -188,14 +188,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     public String loadJSONFromAsset() {
-        String json = null;
+        String json;
         try {
             InputStream is = getAssets().open("name.json");
             int size = is.available();
             byte[] buffer = new byte[size];
             is.read(buffer);
             is.close();
-            json = new String(buffer, "UTF-8");
+            json = new String(buffer, StandardCharsets.UTF_8);
         } catch (IOException ex) {
             ex.printStackTrace();
             return null;
@@ -243,33 +243,33 @@ public class MainActivity extends AppCompatActivity {
         }
 
         trie.insertIntoTrie(faculty_names);
-        EditText search=(EditText) findViewById(R.id.editTextTextPersonName);
+        EditText search= findViewById(R.id.editTextTextPersonName);
 
         ListView searchResults =findViewById(R.id.namesList);
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,names);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, names);
         searchResults.setAdapter(adapter);
 
-        trieTimeText=(TextView)findViewById(R.id.trieTimeText);
-        linearTimeText=(TextView)findViewById(R.id.linearTimeText);
+        trieTimeText= findViewById(R.id.trieTimeText);
+        linearTimeText= findViewById(R.id.linearTimeText);
 
-        TextView searchTime=(TextView) findViewById(R.id.searchTime);
-        FloatingActionButton button=(FloatingActionButton) findViewById(R.id.button);
+        TextView searchTime= findViewById(R.id.searchTime);
+        FloatingActionButton button= findViewById(R.id.button);
         button.setOnClickListener(v -> {
             names.clear();
             isHit=false;
             String query = search.getText().toString().toUpperCase();
-            Long start=System.nanoTime();
+            long start=System.nanoTime();
             if(isTrie){
                 trie.displayContacts(query);
             }
             else{
                 linearSearch(query);
             }
-            Long time=System.nanoTime()-start;
+            long time=System.nanoTime()-start;
             setTime(time);
             adapter.notifyDataSetChanged();
 
-            searchTime.setText("querying finished in "+String.valueOf((new Double(time))/1000000)+" microsecods");
+            searchTime.setText("querying finished in ".concat(String.valueOf((new Double(time))/1000000)+" microseconds"));
 
         });
         search.addTextChangedListener(new TextWatcher() {
@@ -283,7 +283,7 @@ public class MainActivity extends AppCompatActivity {
                 names.clear();
                 isHit=false;
                 String query = search.getText().toString().toUpperCase();
-                Long sTime=System.nanoTime();
+                long sTime=System.nanoTime();
                 if(isTrie){
                     trie.displayContacts(query);
                 }
@@ -294,7 +294,7 @@ public class MainActivity extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
                 setTime(time);
                 Log.i("mine", String.valueOf((Double.valueOf(time))/1000000));
-                searchTime.setText("querying finished in "+String.valueOf((new Double(time))/1000000)+" microsecods");
+                searchTime.setText("querying finished in ".concat(String.valueOf((new Double(time))/1000000)+" microseconds"));
             }
 
             @Override
@@ -302,64 +302,50 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        searchResults.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                AlertDialog.Builder builder=new AlertDialog.Builder(MainActivity.this);
-                builder.setTitle("Faculty Information");
-                View viewInflated = LayoutInflater.from(getApplicationContext()).inflate(R.layout.faculty_info,(ViewGroup) findViewById(android.R.id.content) , false);
-                TextView name=(TextView)viewInflated.findViewById(R.id.name);
-                TextView mobile=(TextView)viewInflated.findViewById(R.id.mobile);
-                TextView email=(TextView)viewInflated.findViewById(R.id.email);
-                TextView employeeID=(TextView)viewInflated.findViewById(R.id.employeeID);
-                TextView cabin=(TextView)viewInflated.findViewById(R.id.cabin);
+        searchResults.setOnItemClickListener((parent, view, position, id) -> {
+            AlertDialog.Builder builder=new AlertDialog.Builder(MainActivity.this);
+            builder.setTitle("Faculty Information");
+            View viewInflated = LayoutInflater.from(getApplicationContext()).inflate(R.layout.faculty_info,(ViewGroup) findViewById(android.R.id.content) , false);
+            TextView name= viewInflated.findViewById(R.id.name);
+            TextView mobile= viewInflated.findViewById(R.id.mobile);
+            TextView email= viewInflated.findViewById(R.id.email);
+            TextView employeeID= viewInflated.findViewById(R.id.employeeID);
+            TextView cabin= viewInflated.findViewById(R.id.cabin);
 
 
-                JSONObject fac=getFac(names.get(position));
-                try {
-                    name.setText("Name: "+fac.getString("name"));
-                    mobile.setText("Name: "+fac.getString("mobile"));
-                    email.setText("Name: "+fac.getString("email"));
-                    employeeID.setText("Name: "+fac.getString("empId"));
-                    cabin.setText("Name: "+fac.getString("cabin"));
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                builder.setView(viewInflated);
-                builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-                builder.show();
+            JSONObject fac=getFac(names.get(position));
+            try {
+                name.setText("Name: "+fac.getString("name"));
+                mobile.setText("Name: "+fac.getString("mobile"));
+                email.setText("Name: "+fac.getString("email"));
+                employeeID.setText("Name: "+fac.getString("empId"));
+                cabin.setText("Name: "+fac.getString("cabin"));
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
+            builder.setView(viewInflated);
+            builder.setPositiveButton("ok", (dialog, which) -> dialog.dismiss());
+            builder.show();
         });
         Switch switchButton= (Switch) findViewById(R.id.toggle);
         switchButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked){
-                    isTrie = false;
-                }
-                else{
-                    isTrie = true;
-
-                }
+                isTrie = !isChecked;
             }
         });
     }
 
     private void setTime(Long time) {
         if(isTrie){
-            trieTime=(Double.valueOf(trieCount*trieTime) +time)/(++trieCount);
+            trieTime=(trieCount * trieTime +time)/(++trieCount);
 //            Log.i("mine","Trie:"+ String.valueOf(trieTime/1000000));
-            trieTimeText.setText("Trie"+String.valueOf(trieTime/1000000));
+            trieTimeText.setText("Trie: ".concat(String.valueOf(trieTime/1000000)));
         }
         else{
-            linearTime=(Double.valueOf(linearCount*linearTime) +time)/(++linearCount);
+            linearTime=(linearCount * linearTime +time)/(++linearCount);
 //            Log.i("mine","linear:"+ String.valueOf(linearTime/1000000));
-            linearTimeText.setText("Linear"+String.valueOf(linearTime/1000000));
+            linearTimeText.setText("Linear: ".concat(String.valueOf(linearTime/1000000)));
 
 
         }
